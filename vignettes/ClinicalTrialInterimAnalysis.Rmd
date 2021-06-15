@@ -1,8 +1,8 @@
 ---
-title: "CinicalTrialInterimAnalysis"
+title: "ClinicalTrialInterimAnalysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{CinicalTrialInterimAnalysis}
+  %\VignetteIndexEntry{ClinicalTrialInterimAnalysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,5 +15,5 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(CinicalTrialInterimAnalysis)
+library(ClinicalTrialInterimAnalysis)
 ```

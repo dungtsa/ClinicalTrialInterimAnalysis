@@ -1,4 +1,4 @@
-#' @name CinicalTrialInterimAnalysis
+#' @name ClinicalTrialInterimAnalysis
 
 #' @title Clinical Trial Interim Report
 
@@ -8,7 +8,7 @@
 
 
 
-  CinicalTrialInterimAnalysis <- function() {
+  ClinicalTrialInterimAnalysis <- function() {
 
   appDir <- system.file("shiny-examples", "myapp", package = "CinicalTrialInterimAnalysis")
 
