@@ -1,0 +1,27 @@
+Package: ClinicalTrialInterimReport
+Type: Package
+Title: Sample size for clinial trial with interim analysis report
+Version: 0.1.0
+Authors@R: c( person("Dung-Tsa", "Chen", email = "Dung-Tsa.Chen@moffitt.org", role = c("cre")),
+              person("Zachary", "Thompson", email = "zachary.thompson@moffitt.org", role = c("aut")) ) 
+Maintainer: Zachary Thompson <zachary.thompson@moffitt.org>
+Description: Takes a number of parameters and calculates power 
+    for two group comparision using log rank test and simulation.
+    It can ouput a report in word or pdf format.
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
+Imports: shiny, 
+         tidyverse,
+         DT,
+         lubridate,
+         janitor,
+         shinyjs,
+         ggplot2,
+         shinythemes,
+         survival,
+         rmarkdown
+Suggests: 
+    knitr
+VignetteBuilder: knitr

@@ -1,0 +1,46 @@
+---
+title: Interim Report
+author: "Chen et.al"
+output:
+  word_document: default
+header-includes: \usepackage{bbm}
+
+---
+========================================================
+
+```{r library, echo=FALSE, comment = "", warning=FALSE, message=FALSE}
+library(knitr)
+library(rmarkdown)
+options(scipen=3)
+```
+
+
+```{r set-options, echo = FALSE, cache = FALSE}
+options(width=60)
+opts_chunk$set(comment = "", warning = FALSE, message = FALSE, echo = TRUE, tidy = FALSE, size="small",fig.height=5)
+```
+
+
+```{r, echo = FALSE}
+#tmp99<-get.result.MultiArm()
+
+         power <- somevalues()$pow 
+         typeI <- somevalues()$typI 
+         cutoffStage1 <- somevalues()$cut1 
+         cutoffStage2 <- somevalues()$cut2
+         PETH0 <- somevalues()$PETH0  
+         PETH1 <- somevalues()$PETH1
+
+```
+
+
+# Statistical Plan
+
+Sample size justification: A total of `r input$n1+input$n2` patients will be enrolled in the first `r input$time.accrual` months with an estimated accrual of `r ceiling((input$n1+input$n2)/input$time.accrual)` subjects per month. All the patients will be followed up for at least `r input$time.followup` months. We hypothesize a median `r input$endpointLong` (`r input$endpointShort`) of `r input$medH1` months (H1: alternative hypothesis) in the treatment group compared to `r input$medH0` months (H0: null hypothesis) in the historic control group (Hazard ratio (HR)=`r input$medH0`/`r input$medH1`=`r round(input$medH0/input$medH1,2)`). `r input$endpointShort` is defined as `r input$endpointDescription`.
+An interim futility analysis will be performed after the first `r round(input$time.accrual/2)` months (`r input$n1` patients enrolled). A statistic, W, utilizes the expected events (Event.E) under the null hypothesis to compare to the observed events (Event.O) and defines the stopping boundary where W = (Event.O-Event.E)/sqrt(Event.E). If W is higher than `r  cutoffStage1` (i.e., the number of observed events is higher than expected, meaning a  shorter `r input$endpointShort`), the treatment will be considered ineffective and the trial will be stopped. Otherwise, additional `r input$n2` patients will be enrolled in the second `r round(input$time.accrual/2)` months. At end of the study, if W is less than `r cutoffStage2` (i.e., the number of events is lower than expected, meaning a longer `r input$endpointShort`), the treatment will be considered promising. Simulation analysis show that the design has `r power*100`% power to detect the effect size of HR=`r round(input$medH0/input$medH1,2)` controlled at one-sided `r  typeI*100`% type I error. Probability of early termination (PET) is `r PETH0*100`% if the true median  `r input$endpointShort` is `r  input$medH0` months under the null hypothesis with an expected sample size of `r round( PETH0*input$n1+(input$n1+input$n2)*(1 - PETH0))` (`r PETH0`  * `r input$n1` + `r input$n1+input$n2` * `r 1- PETH0`). When the true median `r  input$endpointShort` is `r  input$medH1` months (H1), PET is `r  PETH1*100` % and the estimated sample size is 
+`r round( PETH1*input$n1+(input$n1+input$n2)*(1- PETH1))` (`r PETH1`  * `r input$n1` + `r input$n1+input$n2` * `r 1- PETH1`).
+
+# Data Analysis
+
+Kaplan-Meier curves of estimated `r  input$endpointShort` will be generated. One-sided log-rank test will be used to test if the treatment group yields a longer `r  input$endpointShort` compared to the historical control (median `r  input$endpointShort` of `r  input$medH0` months). Median `r  input$endpointShort` times with 95% confidence intervals will also be determined. As defined in the protocol, the survival analysis will be based on the intent-to-treat population, which will include all eligible patients enrolled in this study. This will be also performed using multivariate Cox regression model by incorporating variables of interest as covariates in the model. Data will be summarized overall using descriptive statistics. For example, continuous data will be summarized with number of patients (n), mean, median, minimum, maximum, standard deviation, coefficient of variation, and geometric mean (where applicable). Categorical data will be summarized using frequency counts and percentages.
+ 
