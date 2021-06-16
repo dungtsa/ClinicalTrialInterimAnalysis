@@ -6,7 +6,7 @@
 #
 #    http://shiny.rstudio.com/
 #
- 
+
 library(shiny)
 #library(clinfun)
 #library(Biobase) 
@@ -125,10 +125,10 @@ power_one_sample_logrank_interim <- function(medH0=30, medH1=42, n1=60, n2=60, t
 
 # Define UI for application that draws a histogram ####
 ui <- shinyUI(fluidPage(
-
+    
     # Application title
     titlePanel("One Sample Interim Analysis"),
-   
+    
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
@@ -187,18 +187,20 @@ ui <- shinyUI(fluidPage(
             #              choiceNames = list("95%" , "90%"  ),
             #              choiceValues  = list( 0.95  , 0.90  ) ),
             
+            
+            hr(),
+            textInput("endpointShort", "Short Endpoint (eg. OS, DFS, PFS)", "DFS"),
+            
+            textInput("endpointLong", "Long Endpoint (eg. Overall Survival, 
+                      disease-free survival)", "disease-free survival"),
+            
+            textInput("endpointDescription", "Describe the endpoint", "the time from randomization to the earliest event which includes local, regional, or distant recurrence, new lung cancer, or death"),
+            
+            
+            
             hr(),
             actionButton("go", "Submit"), 
-            
             hr(),
-            hr(),
-            textInput("endpointShort", "Short Endpoint (eg. OS, DFS", "DFS"),
-            
-            textInput("endpointLong", "Long Endpoint (eg. Overall Sruvival, 
-                      disease-free survival", "disease-free survival"),
-            
-            textInput("endpointDescription", "Describe the endpoint", "the time from randomization to the earliest event which includes local, 
-                      regional, or distant recurrence, new lung cancer, or death"),
             
             radioButtons('format', 'Document format', c('Word', 'PDF'),
                          
@@ -206,11 +208,15 @@ ui <- shinyUI(fluidPage(
             
             downloadButton('downloadReport', "Download Report"),
             
- 
+            
         ),
-
+        
         # Show a plot of the generated distribution
         mainPanel(
+            textOutput("writing"),                            
+            br(),
+            textOutput("writing2"),  
+            br(),
             plotOutput("scatterplot1"),   
             verbatimTextOutput("text"),
             dataTableOutput(outputId = "table2") ,  
@@ -238,10 +244,47 @@ server <- shinyServer(function(input, output) {
     
     
     
+    writing <- eventReactive(input$go, {paste("Statistical Plan: 
+
+Sample size justification: A total of ", input$n1+input$n2," patients will be enrolled in the first ", input$time.accrual," months with
+an estimated accrual of ", ceiling((input$n1+input$n2)/input$time.accrual)," subjects per month. All the patients will be followed up 
+for at least ", input$time.followup," months. We hypothesize a median ", input$endpointLong," (", input$endpointShort,") of ", input$medH1," 
+months (H1: alternative hypothesis) in the treatment group compared to ", input$medH0," months (H0: null hypothesis) in the historic control 
+group (Hazard ratio (HR)=", input$medH0,"/", input$medH1,"=", round(input$medH0/input$medH1,2),"). ", input$endpointShort," is defined as ", input$endpointDescription,".
+An interim futility analysis will be performed after the first ", round(input$time.accrual/2)," months (", input$n1," patients enrolled). 
+A statistic, W, utilizes the expected events (Event.E) under the null hypothesis to compare to the observed events (Event.O) and defines
+the stopping boundary where W = (Event.O-Event.E)/sqrt(Event.E). If W is higher than ",  somevalues()$cut1," (i.e., the number of observed events
+is higher than expected, meaning a  shorter ", input$endpointShort,"), the treatment will be considered ineffective and the trial will be stopped.
+Otherwise, additional ", input$n2," patients will be enrolled in the second ", round(input$time.accrual/2)," months. At end of the study, if W is
+less than ", somevalues()$cut2," (i.e., the number of events is lower than expected, meaning a longer ", input$endpointShort,"), the treatment will be 
+considered promising. Simulation analysis show that the design has ", somevalues()$pow*100,"% power to detect the effect size of HR=", round(input$medH0/input$medH1,2),"
+controlled at one-sided ",  somevalues()$typI*100,"% type I error. Probability of early termination (PET) is ", somevalues()$PETH0*100,"% if the true median  ", input$endpointShort,"
+is ",  input$medH0," months under the null hypothesis with an expected sample size of ", round( somevalues()$PETH0*input$n1+(input$n1+input$n2)*(1 - somevalues()$PETH0))," 
+(", somevalues()$PETH0,"  * ", input$n1," + ", input$n1+input$n2," * ", 1- somevalues()$PETH0,"). When the true median ",  input$endpointShort," is ",  input$medH1," months (H1),
+PET is ",  somevalues()$PETH1*100," % and the estimated sample size is 
+", round( somevalues()$PETH1*input$n1+(input$n1+input$n2)*(1- somevalues()$PETH1))," (", somevalues()$PETH1,"  * ", input$n1," + ", input$n1+input$n2," * "
+                                              , 1- somevalues()$PETH1,").  \n")}) 
+    
+    
+ writing2 <- eventReactive(input$go, {paste("Data Analysis:
+
+Kaplan-Meier curves of estimated ",  input$endpointShort," will be generated. One-sided log-rank test will be used to test if the treatment
+        group yields a longer ",  input$endpointShort," compared to the historical control (median ",  input$endpointShort," of ",  input$medH0," months).
+        Median ",  input$endpointShort," times with 95% confidence intervals will also be determined. As defined in the protocol, the survival analysis
+        will be based on the intent-to-treat population, which will include all eligible patients enrolled in this study. The intent-to-treat survival
+        analyses using multivariable Cox regression model by incorporating appropriate covariates in the model. Data will be summarized overall using 
+        descriptive statistics. For example, continuous data will be summarized with number of patients (n), mean, median, minimum, maximum, standard 
+        deviation, coefficient of variation, and geometric mean (where applicable). Categorical data will be summarized using frequency counts and 
+        percentages.") })
+    
+    output$writing <- renderText({   writing()    })
+    output$writing2 <- renderText({   writing2()    })
+    
+    
     
     get.result  <-  eventReactive(input$go,{ 
-   
-    
+        
+        
         power_one_sample_logrank_interim(medH0 = input$medH0, 
                                          medH1 = input$medH1, 
                                          n1 = input$n1, 
@@ -249,7 +292,7 @@ server <- shinyServer(function(input, output) {
                                          time.accrual = input$time.accrual, 
                                          time.followup = input$time.followup, 
                                          n.sim = input$n.sim)
-            
+        
     })
     
     output$table1  <- renderDataTable({
@@ -265,10 +308,10 @@ server <- shinyServer(function(input, output) {
         test <- as.data.frame(get.result()$summary[,c(-1,-2)] ) %>% filter(H0_Sign_Pass < 0.05) 
         type1lt05 <- as.data.frame(test ) %>% filter(H0_Sign_Pass < 0.05) %>% arrange(desc(H0_Sign_Pass), desc(boundary.1st), desc(H1_Sign_Pass)) 
         type1lt05 <-  type1lt05[1, ]
-         # list( pow = round(type1lt05[ ,2], 2),
-         #             typI = round(type1lt05[ ,8], 2),
-         #             cut1 = round(type1lt05[ ,6], 2),
-         #             cut2 = -round(sqrt(qchisq(1-type1lt05[ ,6],df=1)),2))
+        # list( pow = round(type1lt05[ ,2], 2),
+        #             typI = round(type1lt05[ ,8], 2),
+        #             cut1 = round(type1lt05[ ,6], 2),
+        #             cut2 = -round(sqrt(qchisq(1-type1lt05[ ,6],df=1)),2))
         return(list( pow = round(type1lt05$H1_Sign_Pass, 3),
                      typI = round(type1lt05$H0_Sign_Pass, 3),
                      cut1 = round(type1lt05$boundary.1st, 2),
@@ -276,28 +319,28 @@ server <- shinyServer(function(input, output) {
                      PETH0 = round(type1lt05$H0_NonSig_Stop + type1lt05$H0_Sig_Stop, 2),
                      PETH1 = round(type1lt05$H1_NonSig_Stop + type1lt05$H1_Sig_Stop, 2))
         )
-          
-                                               })
-
+        
+    })
+    
     
     
     
     observe({
-         print("DOES THIS WORK:")
-         print(somevalues())
-         print(somevalues()$pow)
-         print(somevalues()$typI)
-         print(somevalues()$cut1)
-         print(somevalues()$cut2)
+        print("DOES THIS WORK:")
+        print(somevalues())
+        print(somevalues()$pow)
+        print(somevalues()$typI)
+        print(somevalues()$cut1)
+        print(somevalues()$cut2)
         
-          plotdata <- get.result()$summary[,c(-1,-2)] 
-          print(str(plotdata))
+        plotdata <- get.result()$summary[,c(-1,-2)] 
+        print(str(plotdata))
         # test<-as.data.frame(plotdata ) %>% filter(H0_Sign_Pass < 0.05) 
         # print(length(test$H0_Sign_Pass[test$H0_Sign_Pass == max(test$H0_Sign_Pass)]))
         # 
-    #  print( NROW(type1lt05 <- as.data.frame(plotdata) %>% filter(H0_Sign_Pass < 0.05) %>% arrange(H0_Sign_Pass, boundary.1st, H1_Sign_Pass) ))
-    # print(summary(type1lt05$H1_Sign_Pass))
-    # print( type1lt05)
+        #  print( NROW(type1lt05 <- as.data.frame(plotdata) %>% filter(H0_Sign_Pass < 0.05) %>% arrange(H0_Sign_Pass, boundary.1st, H1_Sign_Pass) ))
+        # print(summary(type1lt05$H1_Sign_Pass))
+        # print( type1lt05)
     })
     
     output$table2  <- renderDataTable({
@@ -314,12 +357,13 @@ server <- shinyServer(function(input, output) {
         x <- as.data.frame(get.result()$summary[, c(-1,-2)]);
         print(str(x)) 
         ggplot(x, aes(x = H1_Sign_Pass, y = H0_Sign_Pass)) + geom_point() + 
-             geom_hline(yintercept = 0.05, linetype = "dashed", color = "red")
+            geom_hline(yintercept = 0.05, linetype = "dashed", color = "red")
         # Change the point size, and shape 
-            #geom_point(size=2, shape=23)
-     
-
+        #geom_point(size=2, shape=23)
+        
+        
     })
+    
     
     #---output report----
     
