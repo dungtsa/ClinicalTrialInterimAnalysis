@@ -1,6 +1,6 @@
 #' @name ClinicalTrialInterimAnalysis
 
-#' @title Clinical Trial Interim Report
+#' @title Clinical Trial Interim Report.
 
 #' @description This function will run a Shiny application
 
